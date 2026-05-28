@@ -15,10 +15,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: '仅支持 POST 请求' });
   }
 
-  const { model, redditUrl, redditBody, competitorInfo, myInfo } = req.body || {};
+  const { model, redditUrl, redditBody: rawRedditBody, competitorInfo, myInfo } = req.body || {};
 
-  if (!redditUrl || !redditBody) {
-    return res.status(400).json({ error: '缺少必填参数：redditUrl, redditBody' });
+  if (!redditUrl) {
+    return res.status(400).json({ error: '缺少必填参数：redditUrl' });
   }
 
   if (!competitorInfo || !myInfo) {
@@ -28,6 +28,15 @@ export default async function handler(req, res) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: '服务端 API Key 未配置' });
+  }
+
+  // 尝试自动抓取 Reddit 帖子内容
+  let redditBody = rawRedditBody || '';
+  if (!redditBody) {
+    const fetched = await fetchRedditContent(redditUrl);
+    if (fetched) {
+      redditBody = fetched;
+    }
   }
 
   // 模型名映射
@@ -189,4 +198,31 @@ ${myInfo || '未提供'}
 - 营销感：只能比竞品帖子更低，不能更高
 - 语气：与竞品帖子保持一致
 - 语言完全重写，不出现与原帖相同的句式`;
+}
+
+/**
+ * 尝试通过 Reddit .json 后缀自动抓取帖子内容
+ * @param {string} url - Reddit 帖子链接
+ * @returns {Promise<string|null>} 帖子标题+正文，失败返回 null
+ */
+async function fetchRedditContent(url) {
+  try {
+    const jsonUrl = url + '.json';
+    const response = await fetch(jsonUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; RedditCopyGenerator/1.0)'
+      }
+    });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const post = data?.[0]?.data?.children?.[0]?.data;
+    if (!post) return null;
+
+    const title = post.title || '';
+    const selftext = post.selftext || '';
+    return `标题：${title}\n\n正文：${selftext}`;
+  } catch {
+    return null;
+  }
 }

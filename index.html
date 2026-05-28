@@ -439,8 +439,8 @@
         let competitorInfo = competitorInfoInput.value.trim();
         let myInfo = myProductInfoInput.value.trim();
 
-        if (!redditUrl || !redditBody) {
-          showError(outputError, '请填写 Reddit 帖子链接和正文');
+        if (!redditUrl) {
+          showError(outputError, '请填写 Reddit 帖子链接');
           return;
         }
 
