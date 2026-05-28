@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reddit 爆款文案生成器</title>
+  <style>
+    /* 全局重置与基础样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333333;
+      line-height: 1.6;
+    }
+
+    /* 页面容器 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* 页面标题 */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: #666666;
+    }
+
+    /* 主内容区：左右两栏 */
+    .main {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    /* 左侧输入区 */
+    .input-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #444444;
+      margin-bottom: 8px;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333333;
+      background-color: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    /* 可选标注 */
+    .optional {
+      font-weight: 400;
+      color: #9ca3af;
+      margin-left: 4px;
+    }
+
+    /* 输入提示文字 */
+    .input-hint {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* 按钮基础样式 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .btn:active {
+      opacity: 0.9;
+    }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background-color: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background-color: #d1d5db;
+    }
+
+    /* 官网抓取按钮 */
+    .fetch-btn {
+      margin-top: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      background-color: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .fetch-btn:hover {
+      background-color: #dbeafe;
+    }
+
+    .fetch-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 右侧输出区 */
+    .output-section {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 模型选择器 */
+    .model-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .model-selector label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #444444;
+    }
+
+    .model-selector select {
+      padding: 8px 28px 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333333;
+      background-color: #ffffff;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .model-selector select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .output-header h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: #444444;
+    }
+
+    .output-area {
+      width: 100%;
+      min-height: 360px;
+      padding: 16px;
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #333333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .output-placeholder {
+      color: #9ca3af;
+    }
+
+    /* 错误提示 */
+    .error-message {
+      padding: 10px 14px;
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: #dc2626;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* 响应式：小屏幕时堆叠 */
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 页面标题与说明 -->
+    <div class="header">
+      <h1>Reddit 爆款文案生成器</h1>
+      <p>分析竞品 Reddit 爆款帖子，一键生成适合你产品的 Reddit 运营文案</p>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main">
+      <!-- 左侧输入区 -->
+      <div class="input-section">
+        <!-- 竞品 Reddit 帖子信息 -->
+        <div class="form-group">
+          <p class="input-hint">请打开 Reddit 帖子，将链接和正文复制粘贴到下方</p>
+          <label for="redditUrl">竞品的爆款帖子链接</label>
+          <input type="text" id="redditUrl" placeholder="https://www.reddit.com/r/...">
+        </div>
+
+        <div class="form-group">
+          <label for="redditBody">爆款帖子正文</label>
+          <textarea id="redditBody" placeholder="" style="min-height: 120px;"></textarea>
+        </div>
+
+        <!-- 竞品官网 -->
+        <div class="form-group">
+          <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
+          <input type="text" id="competitorWebsite" placeholder="https://...">
+        </div>
+
+        <!-- 竞品产品信息 -->
+        <div class="form-group">
+          <label for="competitorInfo">竞品产品信息</label>
+          <textarea id="competitorInfo" placeholder="请描述竞品的核心功能、卖点、定价等信息，或填写官网链接后点击抓取"></textarea>
+          <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
+        </div>
+
+        <!-- 我的产品官网 -->
+        <div class="form-group">
+          <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
+          <input type="text" id="myWebsite" placeholder="https://...">
+        </div>
+
+        <!-- 我的产品信息 -->
+        <div class="form-group">
+          <label for="myProductInfo">我的产品信息</label>
+          <textarea id="myProductInfo" placeholder="请描述你的产品核心功能、卖点等信息，或填写官网链接后点击抓取"></textarea>
+          <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
+        </div>
+      </div>
+
+      <!-- 右侧输出区 -->
+      <div class="output-section">
+        <div class="model-selector">
+          <label for="modelSelect">选择模型</label>
+          <select id="modelSelect">
+            <option value="deepseek-v4">deepseek v4</option>
+            <option value="kimi-k2.6">kimi k2.6</option>
+          </select>
+        </div>
+
+        <div class="output-header">
+          <h2>生成结果</h2>
+          <button class="btn btn-primary" id="copyBtn" disabled>复制</button>
+        </div>
+        <div class="output-area" id="outputArea">
+          <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
+        </div>
+        <button class="btn btn-primary" id="generateBtn" style="align-self: flex-start;">生成文案</button>
+        <div class="error-message" id="outputError"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== DOM 元素引用 =====
+    const redditUrlInput = document.getElementById('redditUrl');
+    const redditBodyInput = document.getElementById('redditBody');
+    const competitorWebsiteInput = document.getElementById('competitorWebsite');
+    const competitorInfoInput = document.getElementById('competitorInfo');
+    const myWebsiteInput = document.getElementById('myWebsite');
+    const myProductInfoInput = document.getElementById('myProductInfo');
+    const fetchCompetitorBtn = document.getElementById('fetchCompetitorBtn');
+    const fetchMyBtn = document.getElementById('fetchMyBtn');
+    const modelSelect = document.getElementById('modelSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const outputArea = document.getElementById('outputArea');
+    const copyBtn = document.getElementById('copyBtn');
+    const outputError = document.getElementById('outputError');
+
+    // ===== 事件绑定 =====
+    generateBtn.addEventListener('click', generateCopy);
+    copyBtn.addEventListener('click', copyOutput);
+    fetchCompetitorBtn.addEventListener('click', () => handleFetchWebsite(competitorWebsiteInput, competitorInfoInput, fetchCompetitorBtn, '竞品'));
+    fetchMyBtn.addEventListener('click', () => handleFetchWebsite(myWebsiteInput, myProductInfoInput, fetchMyBtn, '我的'));
+
+    // ===== 功能函数（占位） =====
+
+    /**
+     * 通过 Vercel 后端代理抓取网页内容
+     * 绕过浏览器 CORS 限制
+     * @param {string} url - 目标网址
+     * @returns {Promise<string>} 网页纯文本内容
+     */
+    async function fetchWebsiteContent(url) {
+      let targetUrl = url.trim();
+      if (!targetUrl) {
+        throw new Error('网址不能为空');
+      }
+      // 确保有协议前缀
+      if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl;
+      }
+
+      // 调用 Vercel 后端代理接口
+      const proxyUrl = `/api/fetch-url?url=${encodeURIComponent(targetUrl)}`;
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        let errorMsg = `HTTP ${response.status}`;
+        try {
+          const errData = await response.json();
+          errorMsg = errData.error || errorMsg;
+        } catch (_) {}
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      if (!data.content) {
+        throw new Error('返回内容为空');
+      }
+      return data.content;
+    }
+
+    /**
+     * 处理官网抓取按钮点击
+     * @param {HTMLInputElement} urlInput - 官网链接输入框
+     * @param {HTMLTextAreaElement} infoInput - 产品信息输入框
+     * @param {HTMLButtonElement} btn - 按钮元素
+     * @param {string} label - 提示标签（如「竞品」/「我的」）
+     */
+    async function handleFetchWebsite(urlInput, infoInput, btn, label) {
+      const url = urlInput.value.trim();
+      if (!url) {
+        showError(outputError, `请先填写${label}官网链接`);
+        return;
+      }
+      try {
+        hideError(outputError);
+        const originalText = btn.textContent;
+        btn.textContent = '抓取中...';
+        btn.disabled = true;
+        const text = await fetchWebsiteContent(url);
+        infoInput.value = text;
+      } catch (err) {
+        showError(outputError, `${label}官网抓取失败：${err.message}`);
+      } finally {
+        btn.textContent = `从${label}官网抓取`;
+        btn.disabled = false;
+      }
+    }
+
+    /**
+     * 从 Reddit URL 中提取 subreddit 和标题前缀
+     * @param {string} url - Reddit 帖子链接
+     * @returns {{subreddit: string, title: string}}
+     */
+    function parseRedditUrl(url) {
+      const match = url.match(/\/r\/([^/]+)\/comments\/[^/]+\/([^/]+)/);
+      if (match) {
+        return {
+          subreddit: 'r/' + match[1],
+          title: match[2].replace(/_/g, ' ')
+        };
+      }
+      return { subreddit: '', title: '' };
+    }
+
+    /**
+     * 构建发送给 DeepSeek 的完整 Prompt
+     * 从链接自动提取 subreddit 和标题，读取正文输入框
+     * @param {string} competitorInfo - 用户填写的竞品产品信息
+     * @param {string} myInfo - 用户填写的自己产品信息
+     * @returns {string} 完整 prompt 字符串
+     */
+    function buildPrompt(competitorInfo, myInfo) {
+      const redditUrl = redditUrlInput.value.trim();
+      const body = redditBodyInput.value.trim();
+      const { subreddit, title } = parseRedditUrl(redditUrl);
+
+      const prompt = `你是一名精通 Reddit 社区运营的内容策略师。
+
+## 任务说明
+用户提供了竞品在 Reddit 上的一篇爆款帖子，以及自己的产品信息。
+你需要分析爆款原因，完成产品映射，最终生成用户自己产品的 Reddit 帖子。
+
+核心原则：新帖子的营销感和推广力度，必须严格低于竞品这篇爆款帖子。
+竞品帖子能在这个社区存活并获得高赞，说明它的营销尺度是该社区的上限。
+我们的帖子只能比它更克制，不能更明显。
+
+---
+
+## 输入信息
+
+### 爆款帖子
+- 来源链接（含 subreddit 信息）: ${redditUrl}
+- 标题: ${title || '未提供'}
+- 正文: ${body || '未提供'}
+
+### 竞品产品信息
+${competitorInfo || '未提供'}
+
+### 我的产品信息
+${myInfo || '未提供'}
+
+---
+
+## 输出要求
+
+### 第一部分：爆款结构分析
+简洁分析以下五项，每项一两句话即可：
+- 标题公式
+- 钩子类型
+- 叙事结构
+- 语气风格
+- CTA 方式
+- 营销感评估：这篇帖子的营销力度如何隐藏？用了什么手法让推广显得自然？
+
+### 第二部分：产品映射表
+
+⚠️ 在开始映射之前，先判断：我的产品信息是否足够完成映射？
+判断标准：是否知道产品解决什么问题、目标用户是谁、核心功能是什么。
+
+如果信息不足：
+停止输出，直接告诉用户：
+「当前产品信息不足以完成映射，请补充以下内容：
+1. 你的产品解决什么核心问题？
+2. 主要目标用户是谁？
+3. 最核心的 1~2 个功能是什么？
+4. 和竞品最大的区别是什么？」
+
+如果信息充足，输出以下表格：
+
+| 维度 | 竞品帖子的处理方式 | 我的产品可以如何对应 |
+|---|---|---|
+| 核心问题 | （竞品帖子触达了什么用户痛点）| （我的产品对应的痛点）|
+| 目标用户描述 | （帖子里描述的是什么样的人）| （我的产品的对应用户）|
+| 产品出现方式 | （竞品产品是如何、在哪里被提及的）| （我的产品应该如何出现）|
+| 情感触点 | （帖子触发了什么情绪）| （我的产品可以触发的对应情绪）|
+| 营销隐藏手法 | （竞品用了什么方式让推广显得自然）| （我应该用同样或更克制的方式）|
+
+### 第三部分：新帖子
+
+基于以上分析，生成帖子。
+
+硬性约束：
+- 标题备选：3 个，每个使用不同公式
+- 正文：与竞品帖子保持接近
+- 产品名称出现次数：不超过竞品帖子中产品名称的出现次数
+- 营销感：只能比竞品帖子更低，不能更高
+- 语气：与竞品帖子保持一致
+- 语言完全重写，不出现与原帖相同的句式`;
+
+      return prompt;
+    }
+
+    /**
+     * 调用 DeepSeek API，流式输出结果到输出区
+     * @param {string} prompt - 发送给模型的完整 prompt
+     * @param {string} apiKey - DeepSeek API Key
+     */
+    async function callDeepSeek(prompt, apiKey) {
+      try {
+        outputArea.textContent = '正在调用 DeepSeek API，请稍候...';
+        copyBtn.disabled = true;
+        hideError(outputError);
+
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [{ role: 'user', content: prompt }],
+            stream: true
+          })
+        });
+
+        if (!response.ok) {
+          let errorMsg = `HTTP ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.error?.message || errorMsg;
+          } catch (_) {}
+          throw new Error(errorMsg);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullText = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop(); // 保留不完整的最后一行
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed === 'data: [DONE]') continue;
+
+            if (trimmed.startsWith('data: ')) {
+              try {
+                const json = JSON.parse(trimmed.slice(6));
+                const delta = json.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullText += delta;
+                  outputArea.textContent = fullText;
+                }
+              } catch (e) {
+                // 忽略解析失败的行
+              }
+            }
+          }
+        }
+
+        // 处理 buffer 中剩余的内容
+        if (buffer.trim() && buffer.trim() !== 'data: [DONE]' && buffer.trim().startsWith('data: ')) {
+          try {
+            const json = JSON.parse(buffer.trim().slice(6));
+            const delta = json.choices?.[0]?.delta?.content;
+            if (delta) {
+              fullText += delta;
+              outputArea.textContent = fullText;
+            }
+          } catch (e) {}
+        }
+
+        copyBtn.disabled = false;
+      } catch (err) {
+        outputArea.innerHTML = '<span style="color:#dc2626;">DeepSeek API 调用失败：' + escapeHtml(err.message) + '</span>';
+        showError(outputError, 'DeepSeek API 调用失败：' + err.message);
+        copyBtn.disabled = true;
+        throw err;
+      }
+    }
+
+    /**
+     * 调用 AI API 生成 Reddit 文案
+     */
+    async function generateCopy() {
+      try {
+        hideError(outputError);
+
+        // 读取输入值
+        const redditUrl = redditUrlInput.value.trim();
+        const redditBody = redditBodyInput.value.trim();
+        const { subreddit, title } = parseRedditUrl(redditUrl);
+        const competitorWebsite = competitorWebsiteInput.value.trim();
+        const myWebsite = myWebsiteInput.value.trim();
+        let competitorInfo = competitorInfoInput.value.trim();
+        let myInfo = myProductInfoInput.value.trim();
+
+        // 校验 Reddit 必填项
+        if (!redditUrl || !redditBody) {
+          showError(outputError, '请填写 Reddit 帖子链接和正文');
+          return;
+        }
+
+        // 自动抓取官网内容（当产品信息为空但官网链接已填时）
+        const fetchTasks = [];
+
+        if (!competitorInfo && competitorWebsite) {
+          outputArea.innerHTML = '<span class="output-placeholder">正在抓取竞品官网内容...</span>';
+          fetchTasks.push(
+            fetchWebsiteContent(competitorWebsite)
+              .then(text => {
+                competitorInfo = text;
+                competitorInfoInput.value = text;
+              })
+              .catch(err => {
+                console.error('竞品官网抓取失败：', err);
+              })
+          );
+        }
+
+        if (!myInfo && myWebsite) {
+          if (fetchTasks.length === 0) {
+            outputArea.innerHTML = '<span class="output-placeholder">正在抓取我的官网内容...</span>';
+          }
+          fetchTasks.push(
+            fetchWebsiteContent(myWebsite)
+              .then(text => {
+                myInfo = text;
+                myProductInfoInput.value = text;
+              })
+              .catch(err => {
+                console.error('我的官网抓取失败：', err);
+              })
+          );
+        }
+
+        if (fetchTasks.length > 0) {
+          await Promise.all(fetchTasks);
+        }
+
+        // 校验产品信息
+        if (!competitorInfo || !myInfo) {
+          showError(outputError, '请填写竞品产品信息和我的产品信息，或提供官网链接让系统自动抓取');
+          outputArea.innerHTML = '<span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>';
+          return;
+        }
+
+        // 构建 prompt
+        const prompt = buildPrompt(competitorInfo, myInfo);
+
+        // 获取 API Key（优先从 localStorage 读取）
+        const apiKey = localStorage.getItem('deepseek_api_key');
+        if (!apiKey) {
+          showError(outputError, '请先在浏览器控制台执行：localStorage.setItem("deepseek_api_key", "sk-你的Key")');
+          return;
+        }
+
+        // 调用 DeepSeek API
+        await callDeepSeek(prompt, apiKey);
+      } catch (err) {
+        // 错误已在 callKimiK2_6 或抓取逻辑中显示，此处仅兜底
+        if (!outputError.classList.contains('show')) {
+          showError(outputError, '生成失败：' + err.message);
+        }
+      }
+    }
+
+    /**
+     * 复制输出文案到剪贴板
+     */
+    async function copyOutput() {
+      try {
+        const text = outputArea.innerText;
+        await navigator.clipboard.writeText(text);
+        const originalText = copyBtn.innerText;
+        copyBtn.innerText = '已复制';
+        setTimeout(() => { copyBtn.innerText = originalText; }, 1500);
+      } catch (err) {
+        showError(outputError, '复制失败：' + err.message);
+      }
+    }
+
+    /**
+     * 显示错误信息到指定元素
+     * @param {HTMLElement} element - 错误提示元素
+     * @param {string} message - 错误信息
+     */
+    function showError(element, message) {
+      element.textContent = message;
+      element.classList.add('show');
+    }
+
+    /**
+     * 隐藏指定错误提示元素
+     * @param {HTMLElement} element - 错误提示元素
+     */
+    function hideError(element) {
+      element.classList.remove('show');
+      element.textContent = '';
+    }
+
+    /**
+     * HTML 转义，防止 XSS
+     * @param {string} str
+     * @returns {string}
+     */
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>

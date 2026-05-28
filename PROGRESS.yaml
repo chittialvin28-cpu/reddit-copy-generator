@@ -1,0 +1,50 @@
+achievements:
+  - 完成 index.html 初始骨架
+  - 完成模型选择器替换 API Key 输入并移至右侧
+  - 完成新增竞品官网、我的产品官网两个可选输入框
+  - 完成左右两栏视觉高度对齐调整
+  - 完成 fetchReddit() 自动读取功能原型（含代理回退、状态反馈、缩略预览）
+  - 完成 Reddit 抓取可行性诊断：Reddit 封锁所有未认证浏览器请求及免费 CORS 代理，自动方案不可行（已归档 DIAGNOSIS.md）
+  - 完成手动输入方案替代自动读取：新增 Subreddit 名称、爆款帖子标题、爆款帖子正文三个输入框 + buildPrompt() 函数
+  - 完成输入区精简：去掉 Subreddit 名称和标题输入框，改为「竞品的爆款帖子链接」输入框，从 URL 自动提取 subreddit 和标题前缀
+  - 完成 buildPrompt() Prompt 内容升级：引入「营销感必须低于竞品」核心原则
+  - 完成 Vercel Serverless Function 代理抓取：新增 /api/fetch-url.js 后端接口
+  - 完成 DeepSeek API 接入与流式输出
+  - 完成 API Key 安全机制（localStorage 存储，前端不硬编码）
+  - 完成产品需求文档（overall.md）：统一架构决策、API 合约、开发路线图
+  - 完成 grill-with-docs 会议，完成 6 项关键决策（见下文 decisions）
+
+decisions:
+  - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
+  - 【AI 调用】后端 SSE 流式透传（非缓冲一次性返回），适配 Vercel Hobby 10s 超时限制
+  - 【Reddit 抓取】后端尝试 `fetch(redditUrl + '.json')`，成功自动填充，失败跳过（锦上添花，不阻塞流程）
+  - 【API Key】放入 Vercel 环境变量（`DEEPSEEK_API_KEY`），前端零接触，用户统一使用产品方 Key
+  - 【官网抓取】保留 `/api/fetch-url` 不动，不与 `/api/generate` 合并，保持解耦
+  - 【模型选择】暂时移除 Kimi 选项，仅保留 DeepSeek
+  - 【文档方案】overall.md（产品需求/架构文档）+ PROGRESS.yaml（任务进度快照），两文件分离
+
+current_state:
+  - 项目结构：index.html + api/fetch-url.js + overall.md + PROGRESS.yaml + DIAGNOSIS.md
+  - 左侧输入区：Reddit 链接 + 正文 + 竞品官网（可选）+ 竞品信息 + 我的官网（可选）+ 我的产品信息 + 两个抓取按钮
+  - 右侧输出区：模型选择器 + 结果展示 + 复制按钮 + 生成文案按钮
+  - 官网抓取：前端调 /api/fetch-url 代理，已实现可用
+  - AI 调用：前端直连 DeepSeek API（Key 存 localStorage），待迁移到后端
+  - 项目尚未部署到 Vercel
+
+blockers:
+  - 项目未初始化 Git，未部署到 Vercel，/api/ 接口无法在本地静态服务器测试
+
+NEXT_SESSION_RULES:
+  - 保持代码文件数量简洁，新增文件需有明确必要性
+  - 所有 async 操作必须有 try/catch，按规范显示具体错误信息
+  - 界面文字保持中文，代码注释保持中文
+  - 每次只修改当前微任务涉及的代码区域，不重构其他部分
+  - 后端优先做确定性高的部分：API Key 安全化 > AI 调用后端化 > Reddit 抓取
+
+upcoming_tasks:
+  - [P0] 初始化 Git 仓库并部署到 Vercel，验证 /api/fetch-url 可用
+  - [P0] 新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发
+  - [P0] 改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画
+  - [P1] /api/generate 内部尝试 Reddit .json 抓取（锦上添花）
+  - [P1] 移除模型选择器的 Kimi 选项
+  - [P2] 产品化打磨：loading 状态优化、错误提示文案、Markdown 渲染等
