@@ -206,22 +206,32 @@ ${myInfo || '未提供'}
  * @returns {Promise<string|null>} 帖子标题+正文，失败返回 null
  */
 async function fetchRedditContent(url) {
-  try {
-    const jsonUrl = url + '.json';
+  async function tryFetch(jsonUrl) {
     const response = await fetch(jsonUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; RedditCopyGenerator/1.0)'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*'
       }
     });
     if (!response.ok) return null;
-
     const data = await response.json();
     const post = data?.[0]?.data?.children?.[0]?.data;
     if (!post) return null;
-
     const title = post.title || '';
     const selftext = post.selftext || '';
     return `标题：${title}\n\n正文：${selftext}`;
+  }
+
+  try {
+    let content;
+    content = await tryFetch(url + '.json');
+    if (!content && url.includes('www.reddit.com')) {
+      content = await tryFetch(url.replace('www.reddit.com', 'old.reddit.com') + '.json');
+    }
+    if (!content && url.includes('www.reddit.com')) {
+      content = await tryFetch(url.replace('www.reddit.com', 'old.reddit.com') + '.json?raw_json=1');
+    }
+    return content || null;
   } catch {
     return null;
   }
