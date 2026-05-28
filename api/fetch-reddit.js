@@ -48,6 +48,23 @@ export default async function handler(req, res) {
       result = await tryFetchReddit(oldUrl);
     }
 
+    // 策略 4: Jina AI Reader（有独立 IP，通常不会被封）
+    if (!result) {
+      try {
+        const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
+          headers: { 'Accept': 'text/plain' }
+        });
+        if (jinaRes.ok) {
+          const text = await jinaRes.text();
+          const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+          const title = lines.find(l => l.startsWith('Title:'))?.replace(/^Title:\s*/i, '') || '';
+          const bodyStart = text.indexOf('\n\n');
+          const body = bodyStart > 0 ? text.slice(bodyStart).trim().slice(0, 3000) : text.slice(0, 3000);
+          result = { title, body };
+        }
+      } catch (_) {}
+    }
+
     if (!result) {
       return res.status(404).json({
         error: 'Reddit 帖子抓取失败，请手动填写正文（Vercel 服务器 IP 可能被 Reddit 限制）',
