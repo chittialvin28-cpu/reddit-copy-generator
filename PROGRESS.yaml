@@ -19,6 +19,7 @@ achievements:
   - 完成 /api/generate.js 创建与部署，SSE 流式 AI 调用可用 ✅
   - 完成前端改造：删除 callDeepSeek/buildPrompt/parseRedditUrl，generateCopy 改为调用 /api/generate ✅
   - 完成后端 Reddit .json 自动抓取：redditBody 为空时自动获取帖子标题+正文 ✅
+  - 完成前端 Reddit 抓取 UI：按钮 + 标题展示 + 状态反馈（因 Reddit 封锁 API，抓取不可靠，但 UI 和流程已就绪） ✅
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -32,7 +33,7 @@ decisions:
 current_state:
   - 项目结构：index.html + api/fetch-url.js + api/generate.js + overall.md + PROGRESS.yaml + DIAGNOSIS.md
   - 部署状态：Vercel（https://reddit-copy-generator.vercel.app），已配置 GitHub 自动部署
-  - 左侧输入区：Reddit 链接 + 正文 + 竞品官网（可选）+ 竞品信息 + 我的官网（可选）+ 我的产品信息 + 两个抓取按钮
+  - 左侧输入区：Reddit 链接 + 抓取按钮 + 标题展示 + 正文 + 竞品官网（可选）+ 竞品信息 + 我的官网（可选）+ 我的产品信息 + 两个抓取按钮
   - 右侧输出区：模型选择器 + 结果展示 + 复制按钮 + 生成文案按钮
   - 官网抓取：前端调 /api/fetch-url 代理，已实现可用
   - AI 调用：/api/generate.js 已部署可用（SSE 流式转发 DeepSeek），已配置 DEEPSEEK_API_KEY 环境变量
