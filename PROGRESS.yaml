@@ -18,6 +18,7 @@ achievements:
   - 完成 /api/fetch-url 验证，官网链接抓取正常
   - 完成 /api/generate.js 创建与部署，SSE 流式 AI 调用可用 ✅
   - 完成前端改造：删除 callDeepSeek/buildPrompt/parseRedditUrl，generateCopy 改为调用 /api/generate ✅
+  - 完成后端 Reddit .json 自动抓取：redditBody 为空时自动获取帖子标题+正文 ✅
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -51,6 +52,6 @@ upcoming_tasks:
   - [P0] ~~初始化 Git 仓库并部署到 Vercel，验证 /api/fetch-url 可用~~ ✅
   - [P0] ~~新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发~~ ✅
   - [P0] ~~改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画~~ ✅
-  - [P1] /api/generate 内部尝试 Reddit .json 抓取（锦上添花）
+  - [P1] ~~/api/generate 内部尝试 Reddit .json 抓取（锦上添花）~~ ✅
   - [P1] 移除模型选择器的 Kimi 选项 ← 已提前完成
   - [P2] 产品化打磨：loading 状态优化、错误提示文案、Markdown 渲染等
