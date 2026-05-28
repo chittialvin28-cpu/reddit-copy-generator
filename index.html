@@ -525,6 +525,7 @@
 
     /**
      * 通过 Vercel 后端抓取 Reddit 帖子标题和正文
+     * 复用 /api/fetch-url 代理（Jina AI Reader），从页面文本中提取标题和正文
      */
     async function handleFetchReddit() {
       const url = redditUrlInput.value.trim();
@@ -541,19 +542,26 @@
       hideError(outputError);
 
       try {
-        const response = await fetch(`/api/fetch-reddit?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
-
-        if (!response.ok || !data.title) {
+        const text = await fetchWebsiteContent(url);
+        if (!text) {
           redditStatus.className = 'reddit-status error';
-          redditStatus.textContent = data.error || '抓取失败，请手动粘贴正文';
+          redditStatus.textContent = '抓取失败，请手动粘贴正文';
           return;
         }
 
-        redditTitle.value = data.title;
-        redditTitleGroup.style.display = '';
-        if (data.body) {
-          redditBodyInput.value = data.body;
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        const titleLine = lines.find(l => l.startsWith('Title:')) || '';
+        const title = titleLine.replace(/^Title:\s*/i, '').replace(/^Reddit\s*-\s*/i, '');
+
+        const bodyStart = text.indexOf('\n\n');
+        const body = bodyStart > 0 ? text.slice(bodyStart).trim() : text;
+
+        if (title) {
+          redditTitle.value = title;
+          redditTitleGroup.style.display = '';
+        }
+        if (body) {
+          redditBodyInput.value = body;
           bodySourceLabel.textContent = '已自动抓取';
         }
 
@@ -561,7 +569,7 @@
         redditStatus.textContent = '✓ 抓取成功';
       } catch (err) {
         redditStatus.className = 'reddit-status error';
-        redditStatus.textContent = '抓取失败：' + (err.message || '网络错误');
+        redditStatus.textContent = '抓取失败，请手动粘贴正文';
       } finally {
         fetchRedditBtn.disabled = false;
         fetchRedditBtn.textContent = '从 Reddit 抓取';
