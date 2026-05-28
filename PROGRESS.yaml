@@ -17,6 +17,7 @@ achievements:
   - 完成 Vercel 部署（https://reddit-copy-generator.vercel.app）
   - 完成 /api/fetch-url 验证，官网链接抓取正常
   - 完成 /api/generate.js 创建与部署，SSE 流式 AI 调用可用 ✅
+  - 完成前端改造：删除 callDeepSeek/buildPrompt/parseRedditUrl，generateCopy 改为调用 /api/generate ✅
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -34,9 +35,10 @@ current_state:
   - 右侧输出区：模型选择器 + 结果展示 + 复制按钮 + 生成文案按钮
   - 官网抓取：前端调 /api/fetch-url 代理，已实现可用
   - AI 调用：/api/generate.js 已部署可用（SSE 流式转发 DeepSeek），已配置 DEEPSEEK_API_KEY 环境变量
+  - API Key：完全由 Vercel 环境变量管理，前端零接触，无 localStorage 依赖
 
 blockers:
-  - 前端 generateCopy() 仍调用 localStorage 密钥 + 前端直连，待 Step 3 改造
+  - 无 — P0 全部完成
 
 NEXT_SESSION_RULES:
   - 保持代码文件数量简洁，新增文件需有明确必要性
@@ -48,7 +50,7 @@ NEXT_SESSION_RULES:
 upcoming_tasks:
   - [P0] ~~初始化 Git 仓库并部署到 Vercel，验证 /api/fetch-url 可用~~ ✅
   - [P0] ~~新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发~~ ✅
-  - [P0] 改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画 ← 当前
+  - [P0] ~~改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画~~ ✅
   - [P1] /api/generate 内部尝试 Reddit .json 抓取（锦上添花）
-  - [P1] 移除模型选择器的 Kimi 选项
+  - [P1] 移除模型选择器的 Kimi 选项 ← 已提前完成
   - [P2] 产品化打磨：loading 状态优化、错误提示文案、Markdown 渲染等
