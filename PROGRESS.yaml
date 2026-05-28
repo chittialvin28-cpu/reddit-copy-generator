@@ -13,6 +13,9 @@ achievements:
   - 完成 API Key 安全机制（localStorage 存储，前端不硬编码）
   - 完成产品需求文档（overall.md）：统一架构决策、API 合约、开发路线图
   - 完成 grill-with-docs 会议，完成 6 项关键决策（见下文 decisions）
+  - 完成 Git 初始化 & GitHub 推送（chittialvin28-cpu/reddit-copy-generator）
+  - 完成 Vercel 部署（https://reddit-copy-generator.vercel.app）
+  - 完成 /api/fetch-url 验证，官网链接抓取正常
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -24,15 +27,16 @@ decisions:
   - 【文档方案】overall.md（产品需求/架构文档）+ PROGRESS.yaml（任务进度快照），两文件分离
 
 current_state:
-  - 项目结构：index.html + api/fetch-url.js + overall.md + PROGRESS.yaml + DIAGNOSIS.md
+  - 项目结构：index.html + api/fetch-url.js + api/generate.js + overall.md + PROGRESS.yaml + DIAGNOSIS.md
+  - 部署状态：Vercel（https://reddit-copy-generator.vercel.app），已配置 GitHub 自动部署
   - 左侧输入区：Reddit 链接 + 正文 + 竞品官网（可选）+ 竞品信息 + 我的官网（可选）+ 我的产品信息 + 两个抓取按钮
   - 右侧输出区：模型选择器 + 结果展示 + 复制按钮 + 生成文案按钮
   - 官网抓取：前端调 /api/fetch-url 代理，已实现可用
-  - AI 调用：前端直连 DeepSeek API（Key 存 localStorage），待迁移到后端
-  - 项目尚未部署到 Vercel
+  - AI 调用：新建 /api/generate.js（待部署），前端直连 DeepSeek API（Key 存 localStorage）待迁移
 
 blockers:
-  - 项目未初始化 Git，未部署到 Vercel，/api/ 接口无法在本地静态服务器测试
+  - 需在 Vercel Dashboard 设置 DEEPSEEK_API_KEY 环境变量
+  - 前端 generateCopy() 仍调用 localStorage 密钥 + 前端直连，待 Step 3 改造
 
 NEXT_SESSION_RULES:
   - 保持代码文件数量简洁，新增文件需有明确必要性
@@ -42,8 +46,8 @@ NEXT_SESSION_RULES:
   - 后端优先做确定性高的部分：API Key 安全化 > AI 调用后端化 > Reddit 抓取
 
 upcoming_tasks:
-  - [P0] 初始化 Git 仓库并部署到 Vercel，验证 /api/fetch-url 可用
-  - [P0] 新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发
+  - [P0] ~~初始化 Git 仓库并部署到 Vercel，验证 /api/fetch-url 可用~~ ✅
+  - [P0] 新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发 ← 当前
   - [P0] 改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画
   - [P1] /api/generate 内部尝试 Reddit .json 抓取（锦上添花）
   - [P1] 移除模型选择器的 Kimi 选项
