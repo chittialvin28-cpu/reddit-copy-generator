@@ -936,18 +936,31 @@
         copyBtn.disabled = false;
         saveBtn.disabled = false;
 
-        const sepIdx = fullText.indexOf('[ANALYSIS_SEPARATOR]');
-        if (sepIdx !== -1) {
-          const analysis = fullText.slice(0, sepIdx).trim();
-          const finalPost = fullText.slice(sepIdx + '[ANALYSIS_SEPARATOR]'.length).trim();
+        const part3Match = fullText.match(/(?:###\s*)?第三部分[：:]\s*新帖子[\s\S]*/);
+        if (part3Match) {
+          const part3Start = part3Match.index;
+          const analysis = fullText.slice(0, part3Start).trim();
+          const finalPost = part3Match[0]
+            .replace(/^###\s*第三部分[：:]\s*新帖子\s*\n*/, '')
+            .trim();
           outputArea.textContent = finalPost || fullText;
           if (analysis) {
             analysisContent.textContent = analysis;
             analysisToggle.style.display = '';
           }
         } else {
-          analysisContent.textContent = fullText;
-          analysisToggle.style.display = '';
+          const sepIdx = fullText.indexOf('[ANALYSIS_SEPARATOR]');
+          if (sepIdx !== -1) {
+            const analysis = fullText.slice(0, sepIdx).trim();
+            const finalPost = fullText.slice(sepIdx + '[ANALYSIS_SEPARATOR]'.length).trim();
+            outputArea.textContent = finalPost || fullText;
+            if (analysis) {
+              analysisContent.textContent = analysis;
+              analysisToggle.style.display = '';
+            }
+          } else {
+            outputArea.textContent = fullText;
+          }
         }
       } catch (err) {
         outputArea.innerHTML = '<span style="color:#dc2626;">生成失败：' + escapeHtml(err.message) + '</span>';
