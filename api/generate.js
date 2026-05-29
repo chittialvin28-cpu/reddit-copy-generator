@@ -77,6 +77,7 @@ export default async function handler(req, res) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let fullText = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -95,6 +96,7 @@ export default async function handler(req, res) {
             const json = JSON.parse(trimmed.slice(6));
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) {
+              fullText += delta;
               res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
             }
           } catch (_) {}
@@ -108,12 +110,17 @@ export default async function handler(req, res) {
         const json = JSON.parse(buffer.trim().slice(6));
         const delta = json.choices?.[0]?.delta?.content;
         if (delta) {
+          fullText += delta;
           res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
         }
       } catch (_) {}
     }
 
-    res.write(`event: done\ndata: {}\n\n`);
+    const { analysis, finalPost } = splitOutput(fullText);
+    if (analysis) {
+      res.write(`event: analysis\ndata: ${JSON.stringify({ text: analysis })}\n\n`);
+    }
+    res.write(`event: done\ndata: ${JSON.stringify({ finalPost: finalPost || fullText })}\n\n`);
     res.end();
   } catch (err) {
     res.write(`event: error\ndata: ${JSON.stringify({ error: err.message })}\n\n`);
@@ -201,6 +208,32 @@ ${myInfo || '未提供'}
 
 在输出第三部分（新帖子）之前，单独一行输出标记：[ANALYSIS_SEPARATOR]
 确保该标记独占一行，前后不留空格。`;
+}
+
+/* ===== 输出切分函数 ===== */
+
+function splitOutput(text) {
+  if (!text) return { analysis: null, finalPost: text || '' };
+
+  const patterns = [
+    /(?:###\s*)?第三部分[：:]\s*新帖子/,
+    /(?:###\s*)?Part\s*3[：:]\s*New\s*Post/,
+    /(?:###\s*)?3\s*[.、]\s*新帖子/,
+    /\[ANALYSIS_SEPARATOR\]/
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const start = match.index;
+      const analysis = text.slice(0, start).trim();
+      let finalPost = text.slice(start + match[0].length).trim();
+      finalPost = finalPost.replace(/^[\s\n-]+/, '');
+      return { analysis, finalPost };
+    }
+  }
+
+  return { analysis: null, finalPost: text };
 }
 
 /* ===== Reddit OAuth2 共享逻辑 ===== */
