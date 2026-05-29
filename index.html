@@ -97,31 +97,39 @@
       border-bottom-color: #f0fdf4;
     }
 
-    /* 映射分隔符（箭头） */
+    /* 映射分隔符（箭头/按钮容器） */
     .mapping-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      color: #d1d5db;
-      flex-shrink: 0;
-      width: 36px;
-      user-select: none;
-    }
-
-    /* 生成按钮行 */
-    .generate-row {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 12px;
+      flex-shrink: 0;
+      width: 64px;
+      user-select: none;
     }
 
-    .btn-generate {
-      padding: 14px 48px;
-      font-size: 16px;
+    .mapping-divider .divider-arrow {
+      font-size: 22px;
+      color: #d1d5db;
+    }
+
+    .mapping-divider .divider-btn {
+      padding: 10px 12px;
+      font-size: 13px;
       font-weight: 600;
-      border-radius: 10px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.2s;
+      writing-mode: horizontal-tb;
+    }
+
+    .mapping-divider .divider-btn:hover {
+      background-color: #1d4ed8;
     }
 
     .form-group {
@@ -232,9 +240,13 @@
         flex-direction: column;
       }
       .mapping-divider {
-        transform: rotate(90deg);
+        flex-direction: row;
         width: auto;
-        height: 24px;
+        height: auto;
+        padding: 8px 0;
+      }
+      .mapping-divider .divider-arrow {
+        display: none;
       }
     }
 
@@ -361,12 +373,6 @@
         </div>
       </div>
 
-      <!-- 生成按钮 -->
-      <div class="generate-row">
-        <button class="btn btn-primary btn-generate" id="generateBtn">生成文案</button>
-        <div class="error-message" id="outputError"></div>
-      </div>
-
       <!-- 下层：帖子映射 -->
       <div class="mapping-section">
         <div class="mapping-card competitor-post-card">
@@ -385,7 +391,11 @@
           </div>
         </div>
 
-        <div class="mapping-divider">→</div>
+        <div class="mapping-divider">
+          <span class="divider-arrow">→</span>
+          <button class="divider-btn" id="generateBtn">生成文案</button>
+          <div class="error-message" id="outputError"></div>
+        </div>
 
         <div class="mapping-card generated-post-card">
           <div class="mapping-card-header generated-header">
