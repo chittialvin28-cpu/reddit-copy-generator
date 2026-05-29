@@ -537,6 +537,52 @@
       color: #9ca3af;
     }
 
+    /* 分析过程折叠区 */
+    .analysis-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 6px 0;
+      user-select: none;
+    }
+
+    .analysis-toggle:hover {
+      color: #2563eb;
+    }
+
+    .analysis-toggle .arrow {
+      display: inline-block;
+      transition: transform 0.25s;
+      font-size: 10px;
+    }
+
+    .analysis-toggle.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .analysis-content {
+      display: none;
+      margin-top: 8px;
+      padding: 14px;
+      background-color: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #4b5563;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .analysis-content.visible {
+      display: block;
+    }
+
     /* 错误提示 */
     .error-message {
       padding: 10px 14px;
@@ -640,6 +686,10 @@
             <div class="output-area" id="outputArea">
               <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
             </div>
+            <div class="analysis-toggle" id="analysisToggle" style="display:none;">
+              <span class="arrow">▶</span> 查看分析过程
+            </div>
+            <div class="analysis-content" id="analysisContent"></div>
             <div style="display:flex; gap:8px; align-self:flex-start;">
               <button class="btn btn-primary" id="copyBtn" disabled>复制</button>
               <button class="btn btn-save btn-small" id="saveBtn" disabled>收藏</button>
@@ -684,6 +734,8 @@
     const historyOverlay = document.getElementById('historyOverlay');
     const historyCloseBtn = document.getElementById('historyCloseBtn');
     const historyList = document.getElementById('historyList');
+    const analysisToggle = document.getElementById('analysisToggle');
+    const analysisContent = document.getElementById('analysisContent');
 
     // ===== 事件绑定 =====
     generateBtn.addEventListener('click', generateCopy);
@@ -694,6 +746,7 @@
     historyBtn.addEventListener('click', toggleHistory);
     historyOverlay.addEventListener('click', toggleHistory);
     historyCloseBtn.addEventListener('click', toggleHistory);
+    analysisToggle.addEventListener('click', toggleAnalysis);
 
     // ===== 功能函数（占位） =====
 
@@ -810,6 +863,9 @@
 
         outputArea.textContent = '正在生成文案...';
         copyBtn.disabled = true;
+        analysisToggle.style.display = 'none';
+        analysisContent.classList.remove('visible');
+        analysisContent.textContent = '';
 
         const response = await fetch('/api/generate', {
           method: 'POST',
@@ -879,6 +935,20 @@
 
         copyBtn.disabled = false;
         saveBtn.disabled = false;
+
+        const sepIdx = fullText.indexOf('[ANALYSIS_SEPARATOR]');
+        if (sepIdx !== -1) {
+          const analysis = fullText.slice(0, sepIdx).trim();
+          const finalPost = fullText.slice(sepIdx + '[ANALYSIS_SEPARATOR]'.length).trim();
+          outputArea.textContent = finalPost || fullText;
+          if (analysis) {
+            analysisContent.textContent = analysis;
+            analysisToggle.style.display = '';
+          }
+        } else {
+          analysisContent.textContent = fullText;
+          analysisToggle.style.display = '';
+        }
       } catch (err) {
         outputArea.innerHTML = '<span style="color:#dc2626;">生成失败：' + escapeHtml(err.message) + '</span>';
         showError(outputError, '生成失败：' + err.message);
@@ -1028,6 +1098,15 @@
         renderHistory();
         historyPanel.classList.add('open');
         historyOverlay.classList.add('open');
+      }
+    }
+
+    function toggleAnalysis() {
+      const open = analysisToggle.classList.toggle('open');
+      if (open) {
+        analysisContent.classList.add('visible');
+      } else {
+        analysisContent.classList.remove('visible');
       }
     }
 
