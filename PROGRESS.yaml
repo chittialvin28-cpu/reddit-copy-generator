@@ -20,6 +20,7 @@ achievements:
   - 完成前端改造：删除 callDeepSeek/buildPrompt/parseRedditUrl，generateCopy 改为调用 /api/generate ✅
   - 完成后端 Reddit .json 自动抓取：redditBody 为空时自动获取帖子标题+正文 ✅
   - 完成前端 Reddit 抓取 UI：按钮 + 标题展示 + 状态反馈（因 Reddit 封锁 API，抓取不可靠，但 UI 和流程已就绪） ✅
+  - 完成 P2 映射布局重构：竞品|我的产品横向并列 + 帖子|生成帖子横向并列，以可视化映射关系 ✅
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -54,5 +55,6 @@ upcoming_tasks:
   - [P0] ~~新建 /api/generate.js：接收输入 → 构建 Prompt → 调 DeepSeek（stream）→ SSE 转发~~ ✅
   - [P0] ~~改造前端：删除 callDeepSeek()/buildPrompt()，新增 SSE 流式接收 + loading 动画~~ ✅
   - [P1] ~~/api/generate 内部尝试 Reddit .json 抓取（锦上添花）~~ ✅
-  - [P1] 移除模型选择器的 Kimi 选项 ← 已提前完成
-  - [P2] 产品化打磨：loading 状态优化、错误提示文案、Markdown 渲染等
+  - [P1] ~~移除模型选择器的 Kimi 选项~~ ✅
+  - [P2] ~~映射布局重构：映射卡片、箭头分隔、响应式设计~~ ✅
+  - [P2] 产品化打磨：Markdown 渲染、loading 动画、视觉打磨 ← 待确认
