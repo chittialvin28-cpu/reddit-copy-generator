@@ -44,17 +44,84 @@
       color: #666666;
     }
 
-    /* 主内容区：左右两栏 */
+    /* 主内容区：纵向排列，内含映射行 */
     .main {
       display: flex;
-      gap: 32px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 24px;
     }
 
-    /* 左侧输入区 */
-    .input-section {
+    /* 映射行：左右两栏并排 */
+    .mapping-section {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    /* 映射卡片 */
+    .mapping-card {
       flex: 1;
       min-width: 0;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .mapping-card-header {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f3f4f6;
+    }
+
+    .competitor-card .mapping-card-header {
+      color: #dc2626;
+      border-bottom-color: #fef2f2;
+    }
+
+    .my-card .mapping-card-header {
+      color: #2563eb;
+      border-bottom-color: #eff6ff;
+    }
+
+    .generated-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .generated-post-card .mapping-card-header {
+      border-bottom-color: #f0fdf4;
+    }
+
+    /* 映射分隔符（箭头） */
+    .mapping-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #d1d5db;
+      flex-shrink: 0;
+      width: 36px;
+      user-select: none;
+    }
+
+    /* 生成按钮行 */
+    .generate-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-generate {
+      padding: 14px 48px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
     }
 
     .form-group {
@@ -100,15 +167,7 @@
       margin-left: 4px;
     }
 
-    /* 输入提示文字 */
-    .input-hint {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-
-    /* 按钮基础样式 */
+    /* 官网抓取按钮 */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -167,96 +226,16 @@
       cursor: not-allowed;
     }
 
-    /* URL + 按钮行布局 */
-    .input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-row-url {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* Reddit 抓取按钮 */
-    .fetch-reddit-btn {
-      flex-shrink: 0;
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 500;
-      background-color: #ff4500;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background-color 0.2s, opacity 0.2s;
-    }
-
-    .fetch-reddit-btn:hover {
-      background-color: #e03d00;
-    }
-
-    .fetch-reddit-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Reddit 抓取状态提示 */
-    .reddit-status {
-      margin-top: 8px;
-      font-size: 13px;
-      min-height: 20px;
-    }
-
-    .reddit-status.loading {
-      color: #2563eb;
-    }
-
-    .reddit-status.loading::before {
-      content: '';
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      margin-right: 6px;
-      border: 2px solid #bfdbfe;
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .reddit-status.success {
-      color: #16a34a;
-    }
-
-    .reddit-status.error {
-      color: #dc2626;
-    }
-
-    /* 标题展示（只读） */
-    .title-display {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #6b7280;
-      background-color: #f9fafb;
-      cursor: default;
-    }
-
-    /* 右侧输出区 */
-    .output-section {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    /* 响应式：小屏幕时堆叠 */
+    @media (max-width: 768px) {
+      .mapping-section {
+        flex-direction: column;
+      }
+      .mapping-divider {
+        transform: rotate(90deg);
+        width: auto;
+        height: 24px;
+      }
     }
 
     /* 模型选择器 */
@@ -339,12 +318,6 @@
       display: block;
     }
 
-    /* 响应式：小屏幕时堆叠 */
-    @media (max-width: 768px) {
-      .main {
-        flex-direction: column;
-      }
-    }
   </style>
 </head>
 <body>
@@ -357,74 +330,77 @@
 
     <!-- 主内容区 -->
     <div class="main">
-      <!-- 左侧输入区 -->
-      <div class="input-section">
-        <!-- 竞品 Reddit 帖子信息 -->
-        <div class="form-group">
-          <p class="input-hint">粘贴 Reddit 帖子链接，点击「从 Reddit 抓取」自动获取标题和正文</p>
-          <label for="redditUrl">竞品的爆款帖子链接</label>
-          <div class="input-row">
-            <input type="text" id="redditUrl" placeholder="https://www.reddit.com/r/..." class="input-row-url">
-            <button class="fetch-reddit-btn" id="fetchRedditBtn" type="button">从 Reddit 抓取</button>
+      <!-- 上层：产品信息映射 -->
+      <div class="mapping-section">
+        <div class="mapping-card competitor-card">
+          <div class="mapping-card-header">竞品产品信息</div>
+          <div class="form-group">
+            <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
+            <input type="text" id="competitorWebsite" placeholder="https://...">
+            <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
           </div>
-          <div id="redditStatus" class="reddit-status"></div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="competitorInfo">产品描述</label>
+            <textarea id="competitorInfo" placeholder="竞品的核心功能、卖点、定价等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
+          </div>
         </div>
 
-        <div class="form-group" id="redditTitleGroup" style="display:none;">
-          <label for="redditTitle">帖子标题</label>
-          <input type="text" id="redditTitle" readonly class="title-display" placeholder="抓取后自动显示标题">
-        </div>
+        <div class="mapping-divider">→</div>
 
-        <div class="form-group">
-          <label for="redditBody">帖子正文 <span id="bodySourceLabel" class="optional">手动填写</span></label>
-          <textarea id="redditBody" placeholder="粘贴正文，或点击上方「从 Reddit 抓取」自动填充" style="min-height: 120px;"></textarea>
-        </div>
-
-        <!-- 竞品官网 -->
-        <div class="form-group">
-          <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
-          <input type="text" id="competitorWebsite" placeholder="https://...">
-        </div>
-
-        <!-- 竞品产品信息 -->
-        <div class="form-group">
-          <label for="competitorInfo">竞品产品信息</label>
-          <textarea id="competitorInfo" placeholder="请描述竞品的核心功能、卖点、定价等信息，或填写官网链接后点击抓取"></textarea>
-          <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
-        </div>
-
-        <!-- 我的产品官网 -->
-        <div class="form-group">
-          <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
-          <input type="text" id="myWebsite" placeholder="https://...">
-        </div>
-
-        <!-- 我的产品信息 -->
-        <div class="form-group">
-          <label for="myProductInfo">我的产品信息</label>
-          <textarea id="myProductInfo" placeholder="请描述你的产品核心功能、卖点等信息，或填写官网链接后点击抓取"></textarea>
-          <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
+        <div class="mapping-card my-card">
+          <div class="mapping-card-header">我的产品信息</div>
+          <div class="form-group">
+            <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
+            <input type="text" id="myWebsite" placeholder="https://...">
+            <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="myProductInfo">产品描述</label>
+            <textarea id="myProductInfo" placeholder="你的产品核心功能、卖点等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
+          </div>
         </div>
       </div>
 
-      <!-- 右侧输出区 -->
-      <div class="output-section">
-        <div class="model-selector">
-          <label for="modelSelect">选择模型</label>
-          <select id="modelSelect">
-            <option value="deepseek-v4">deepseek v4</option>
-          </select>
+      <!-- 生成按钮 -->
+      <div class="generate-row">
+        <button class="btn btn-primary btn-generate" id="generateBtn">生成文案</button>
+        <div class="error-message" id="outputError"></div>
+      </div>
+
+      <!-- 下层：帖子映射 -->
+      <div class="mapping-section">
+        <div class="mapping-card competitor-post-card">
+          <div class="mapping-card-header">竞品爆款帖子</div>
+          <div class="form-group">
+            <label for="redditUrl">帖子链接</label>
+            <input type="text" id="redditUrl" placeholder="https://www.reddit.com/r/...">
+          </div>
+          <div class="form-group">
+            <label for="redditTitle">帖子标题<span class="optional">可选</span></label>
+            <input type="text" id="redditTitle" placeholder="手动填写帖子标题">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="redditBody">帖子正文</label>
+            <textarea id="redditBody" placeholder="请复制粘贴 Reddit 帖子的正文内容" style="min-height: 120px;"></textarea>
+          </div>
         </div>
 
-        <div class="output-header">
-          <h2>生成结果</h2>
-          <button class="btn btn-primary" id="copyBtn" disabled>复制</button>
+        <div class="mapping-divider">→</div>
+
+        <div class="mapping-card generated-post-card">
+          <div class="mapping-card-header generated-header">
+            <span>生成的帖子</span>
+            <div class="model-selector" style="margin: 0;">
+              <select id="modelSelect">
+                <option value="deepseek-v4">deepseek v4</option>
+              </select>
+            </div>
+          </div>
+          <div class="output-area" id="outputArea">
+            <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
+          </div>
+          <button class="btn btn-primary" id="copyBtn" disabled style="align-self: flex-start;">复制</button>
         </div>
-        <div class="output-area" id="outputArea">
-          <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
-        </div>
-        <button class="btn btn-primary" id="generateBtn" style="align-self: flex-start;">生成文案</button>
-        <div class="error-message" id="outputError"></div>
       </div>
     </div>
   </div>
@@ -444,18 +420,12 @@
     const outputArea = document.getElementById('outputArea');
     const copyBtn = document.getElementById('copyBtn');
     const outputError = document.getElementById('outputError');
-    const fetchRedditBtn = document.getElementById('fetchRedditBtn');
-    const redditStatus = document.getElementById('redditStatus');
-    const redditTitle = document.getElementById('redditTitle');
-    const redditTitleGroup = document.getElementById('redditTitleGroup');
-    const bodySourceLabel = document.getElementById('bodySourceLabel');
 
     // ===== 事件绑定 =====
     generateBtn.addEventListener('click', generateCopy);
     copyBtn.addEventListener('click', copyOutput);
     fetchCompetitorBtn.addEventListener('click', () => handleFetchWebsite(competitorWebsiteInput, competitorInfoInput, fetchCompetitorBtn, '竞品'));
     fetchMyBtn.addEventListener('click', () => handleFetchWebsite(myWebsiteInput, myProductInfoInput, fetchMyBtn, '我的'));
-    fetchRedditBtn.addEventListener('click', handleFetchReddit);
 
     // ===== 功能函数（占位） =====
 
@@ -520,53 +490,6 @@
       } finally {
         btn.textContent = `从${label}官网抓取`;
         btn.disabled = false;
-      }
-    }
-
-    /**
-     * 通过 Vercel 后端抓取 Reddit 帖子标题和正文
-     * 复用 /api/fetch-url 代理（Jina AI Reader）
-     * Reddit 已限制 API 访问，抓取可能失败，此时提示用户手动粘贴
-     */
-    async function handleFetchReddit() {
-      const url = redditUrlInput.value.trim();
-      if (!url) {
-        redditStatus.className = 'reddit-status error';
-        redditStatus.textContent = '请先填写 Reddit 帖子链接';
-        return;
-      }
-
-      fetchRedditBtn.disabled = true;
-      fetchRedditBtn.textContent = '抓取中...';
-      redditStatus.className = 'reddit-status loading';
-      redditStatus.textContent = '正在抓取 Reddit 帖子...';
-      hideError(outputError);
-
-      try {
-        const text = await fetchWebsiteContent(url);
-        if (!text || text.length < 50) {
-          throw new Error('内容为空');
-        }
-
-        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-        const titleLine = lines.find(l => l.startsWith('Title:')) || '';
-        const title = titleLine.replace(/^Title:\s*/i, '').replace(/^Reddit\s*-\s*/i, '');
-        const bodyStart = text.indexOf('\n\n');
-        const body = bodyStart > 0 ? text.slice(bodyStart).trim() : text;
-
-        if (title) redditTitle.value = title;
-        if (body) redditBodyInput.value = body;
-        redditTitleGroup.style.display = title ? '' : 'none';
-        bodySourceLabel.textContent = '已自动抓取';
-
-        redditStatus.className = 'reddit-status success';
-        redditStatus.textContent = '✓ 抓取成功';
-      } catch (_) {
-        redditStatus.className = 'reddit-status error';
-        redditStatus.textContent = 'Reddit 已限制 API 访问，请手动复制粘贴正文';
-      } finally {
-        fetchRedditBtn.disabled = false;
-        fetchRedditBtn.textContent = '从 Reddit 抓取';
       }
     }
 

@@ -200,38 +200,58 @@ ${myInfo || '未提供'}
 - 语言完全重写，不出现与原帖相同的句式`;
 }
 
+/* ===== Reddit OAuth2 共享逻辑 ===== */
+
+let _cachedToken = null;
+let _tokenExpiry = 0;
+
+async function _getRedditToken() {
+  if (_cachedToken && Date.now() < _tokenExpiry) return _cachedToken;
+  const id = process.env.REDDIT_CLIENT_ID;
+  const secret = process.env.REDDIT_CLIENT_SECRET;
+  if (!id || !secret) return null;
+  const creds = Buffer.from(`${id}:${secret}`).toString('base64');
+  const form = new URLSearchParams();
+  form.append('grant_type', 'client_credentials');
+  form.append('scope', 'read');
+  const res = await fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: { 'Authorization': `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString()
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  _cachedToken = data.access_token;
+  _tokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+  return _cachedToken;
+}
+
 /**
- * 尝试通过 Reddit .json 后缀自动抓取帖子内容
- * @param {string} url - Reddit 帖子链接
- * @returns {Promise<string|null>} 帖子标题+正文，失败返回 null
+ * 通过 Reddit OAuth2 API 自动抓取帖子内容
+ * 作为锦上添花，失败时返回 null 不阻塞流程
  */
 async function fetchRedditContent(url) {
-  async function tryFetch(jsonUrl) {
-    const response = await fetch(jsonUrl, {
+  try {
+    const token = await _getRedditToken();
+    if (!token) return null;
+
+    const parsedUrl = new URL(url);
+    const path = parsedUrl.pathname.replace(/\/?$/, '');
+    const response = await fetch(`https://oauth.reddit.com${path}`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*'
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': 'web:reddit-copy-generator:v1.0 (by /u/reddit-copy-gen)'
       }
     });
     if (!response.ok) return null;
+
     const data = await response.json();
     const post = data?.[0]?.data?.children?.[0]?.data;
     if (!post) return null;
+
     const title = post.title || '';
     const selftext = post.selftext || '';
     return `标题：${title}\n\n正文：${selftext}`;
-  }
-
-  try {
-    let content;
-    content = await tryFetch(url + '.json');
-    if (!content && url.includes('www.reddit.com')) {
-      content = await tryFetch(url.replace('www.reddit.com', 'old.reddit.com') + '.json');
-    }
-    if (!content && url.includes('www.reddit.com')) {
-      content = await tryFetch(url.replace('www.reddit.com', 'old.reddit.com') + '.json?raw_json=1');
-    }
-    return content || null;
   } catch {
     return null;
   }
