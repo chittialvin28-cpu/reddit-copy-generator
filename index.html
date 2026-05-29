@@ -132,6 +132,44 @@
       background-color: #1d4ed8;
     }
 
+    /* 映射区域容器 */
+    .mapping-zone {
+      border-radius: 12px;
+      padding: 16px 20px 20px;
+    }
+
+    .mapping-zone.product-zone {
+      background-color: #f8faff;
+      border: 1px solid #e8edf5;
+    }
+
+    .mapping-zone.post-zone {
+      background-color: #faf9f7;
+      border: 1px solid #f0ede8;
+    }
+
+    /* 映射区域标题条 */
+    .zone-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      padding: 6px 14px;
+      display: inline-block;
+      border-radius: 6px;
+    }
+
+    .product-zone .zone-title {
+      background-color: #e8f0fe;
+      color: #1a56db;
+    }
+
+    .post-zone .zone-title {
+      background-color: #efebe7;
+      color: #8b6f4c;
+    }
+
     .form-group {
       margin-bottom: 24px;
     }
@@ -343,73 +381,79 @@
     <!-- 主内容区 -->
     <div class="main">
       <!-- 上层：产品信息映射 -->
-      <div class="mapping-section">
-        <div class="mapping-card competitor-card">
-          <div class="mapping-card-header">竞品产品信息</div>
-          <div class="form-group">
-            <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
-            <input type="text" id="competitorWebsite" placeholder="https://...">
-            <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
+      <div class="mapping-zone product-zone">
+        <div class="zone-title">产品信息映射</div>
+        <div class="mapping-section">
+          <div class="mapping-card competitor-card">
+            <div class="mapping-card-header">竞品产品信息</div>
+            <div class="form-group">
+              <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
+              <input type="text" id="competitorWebsite" placeholder="https://...">
+              <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="competitorInfo">产品描述</label>
+              <textarea id="competitorInfo" placeholder="竞品的核心功能、卖点、定价等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
+            </div>
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="competitorInfo">产品描述</label>
-            <textarea id="competitorInfo" placeholder="竞品的核心功能、卖点、定价等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
-          </div>
-        </div>
 
-        <div class="mapping-divider">→</div>
+          <div class="mapping-divider">→</div>
 
-        <div class="mapping-card my-card">
-          <div class="mapping-card-header">我的产品信息</div>
-          <div class="form-group">
-            <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
-            <input type="text" id="myWebsite" placeholder="https://...">
-            <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="myProductInfo">产品描述</label>
-            <textarea id="myProductInfo" placeholder="你的产品核心功能、卖点等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
+          <div class="mapping-card my-card">
+            <div class="mapping-card-header">我的产品信息</div>
+            <div class="form-group">
+              <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
+              <input type="text" id="myWebsite" placeholder="https://...">
+              <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="myProductInfo">产品描述</label>
+              <textarea id="myProductInfo" placeholder="你的产品核心功能、卖点等信息，或点击上方按钮自动抓取" style="min-height: 110px;"></textarea>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 下层：帖子映射 -->
-      <div class="mapping-section">
-        <div class="mapping-card competitor-post-card">
-          <div class="mapping-card-header">竞品爆款帖子</div>
-          <div class="form-group">
-            <label for="redditUrl">帖子链接</label>
-            <input type="text" id="redditUrl" placeholder="https://www.reddit.com/r/...">
-          </div>
-          <div class="form-group">
-            <label for="redditTitle">帖子标题<span class="optional">可选</span></label>
-            <input type="text" id="redditTitle" placeholder="手动填写帖子标题">
-          </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label for="redditBody">帖子正文</label>
-            <textarea id="redditBody" placeholder="请复制粘贴 Reddit 帖子的正文内容" style="min-height: 120px;"></textarea>
-          </div>
-        </div>
-
-        <div class="mapping-divider">
-          <span class="divider-arrow">→</span>
-          <button class="divider-btn" id="generateBtn">生成文案</button>
-          <div class="error-message" id="outputError"></div>
-        </div>
-
-        <div class="mapping-card generated-post-card">
-          <div class="mapping-card-header generated-header">
-            <span>生成的帖子</span>
-            <div class="model-selector" style="margin: 0;">
-              <select id="modelSelect">
-                <option value="deepseek-v4">deepseek v4</option>
-              </select>
+      <div class="mapping-zone post-zone">
+        <div class="zone-title">Reddit 爆款帖子映射</div>
+        <div class="mapping-section">
+          <div class="mapping-card competitor-post-card">
+            <div class="mapping-card-header">竞品爆款帖子</div>
+            <div class="form-group">
+              <label for="redditUrl">帖子链接</label>
+              <input type="text" id="redditUrl" placeholder="https://www.reddit.com/r/...">
+            </div>
+            <div class="form-group">
+              <label for="redditTitle">帖子标题<span class="optional">可选</span></label>
+              <input type="text" id="redditTitle" placeholder="手动填写帖子标题">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="redditBody">帖子正文</label>
+              <textarea id="redditBody" placeholder="请复制粘贴 Reddit 帖子的正文内容" style="min-height: 120px;"></textarea>
             </div>
           </div>
-          <div class="output-area" id="outputArea">
-            <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
+
+          <div class="mapping-divider">
+            <span class="divider-arrow">→</span>
+            <button class="divider-btn" id="generateBtn">生成文案</button>
+            <div class="error-message" id="outputError"></div>
           </div>
-          <button class="btn btn-primary" id="copyBtn" disabled style="align-self: flex-start;">复制</button>
+
+          <div class="mapping-card generated-post-card">
+            <div class="mapping-card-header generated-header">
+              <span>生成的帖子</span>
+              <div class="model-selector" style="margin: 0;">
+                <select id="modelSelect">
+                  <option value="deepseek-v4">deepseek v4</option>
+                </select>
+              </div>
+            </div>
+            <div class="output-area" id="outputArea">
+              <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
+            </div>
+            <button class="btn btn-primary" id="copyBtn" disabled style="align-self: flex-start;">复制</button>
+          </div>
         </div>
       </div>
     </div>
