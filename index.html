@@ -28,20 +28,45 @@
 
     /* 页面标题 */
     .header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 32px;
     }
 
-    .header h1 {
+    .header-content {
+      text-align: center;
+      flex: 1;
+    }
+
+    .header-content h1 {
       font-size: 28px;
       font-weight: 600;
       color: #1a1a1a;
       margin-bottom: 8px;
     }
 
-    .header p {
+    .header-content p {
       font-size: 15px;
       color: #666666;
+    }
+
+    /* 个人中心按钮 */
+    .header-history-btn {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      background-color: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .header-history-btn:hover {
+      background-color: #f3f4f6;
     }
 
     /* 主内容区：纵向排列，内含映射行 */
@@ -249,6 +274,166 @@
       background-color: #d1d5db;
     }
 
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* 收藏按钮 */
+    .btn-save {
+      background-color: #f59e0b;
+      color: #ffffff;
+    }
+
+    .btn-save:hover {
+      background-color: #d97706;
+    }
+
+    .btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 历史侧栏遮罩 */
+    .history-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    .history-overlay.open {
+      display: block;
+    }
+
+    /* 历史侧栏 */
+    .history-panel {
+      position: fixed;
+      top: 0;
+      right: -420px;
+      width: 400px;
+      height: 100%;
+      background: #ffffff;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+    }
+
+    .history-panel.open {
+      right: 0;
+    }
+
+    .history-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .history-panel-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .history-close-btn {
+      padding: 4px 10px;
+      font-size: 18px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      border-radius: 4px;
+    }
+
+    .history-close-btn:hover {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+
+    .history-empty {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 14px;
+      padding: 40px 0;
+    }
+
+    .history-card {
+      padding: 14px 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .history-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.1);
+    }
+
+    .history-card-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-card-meta {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .history-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .history-card-actions button {
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .history-card-actions .btn-restore {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .history-card-actions .btn-restore:hover {
+      background-color: #1d4ed8;
+    }
+
+    .history-card-actions .btn-delete {
+      background-color: #fef2f2;
+      color: #dc2626;
+    }
+
+    .history-card-actions .btn-delete:hover {
+      background-color: #fee2e2;
+    }
+
     /* 官网抓取按钮 */
     .fetch-btn {
       margin-top: 8px;
@@ -374,8 +559,11 @@
   <div class="container">
     <!-- 页面标题与说明 -->
     <div class="header">
-      <h1>Reddit 爆款文案生成器</h1>
-      <p>分析竞品 Reddit 爆款帖子，一键生成适合你产品的 Reddit 运营文案</p>
+      <div class="header-content">
+        <h1>Reddit 爆款文案生成器</h1>
+        <p>分析竞品 Reddit 爆款帖子，一键生成适合你产品的 Reddit 运营文案</p>
+      </div>
+      <button class="header-history-btn" id="historyBtn">个人中心</button>
     </div>
 
     <!-- 主内容区 -->
@@ -452,16 +640,32 @@
             <div class="output-area" id="outputArea">
               <span class="output-placeholder">点击「生成文案」后，结果将显示在这里</span>
             </div>
-            <button class="btn btn-primary" id="copyBtn" disabled style="align-self: flex-start;">复制</button>
+            <div style="display:flex; gap:8px; align-self:flex-start;">
+              <button class="btn btn-primary" id="copyBtn" disabled>复制</button>
+              <button class="btn btn-save btn-small" id="saveBtn" disabled>收藏</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- 历史记录侧栏 -->
+  <div class="history-overlay" id="historyOverlay"></div>
+  <div class="history-panel" id="historyPanel">
+    <div class="history-panel-header">
+      <h3>收藏记录</h3>
+      <button class="history-close-btn" id="historyCloseBtn">x</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">暂无收藏记录，生成文案后点击「收藏」保存</div>
+    </div>
+  </div>
+
   <script>
     // ===== DOM 元素引用 =====
     const redditUrlInput = document.getElementById('redditUrl');
+    const redditTitleInput = document.getElementById('redditTitle');
     const redditBodyInput = document.getElementById('redditBody');
     const competitorWebsiteInput = document.getElementById('competitorWebsite');
     const competitorInfoInput = document.getElementById('competitorInfo');
@@ -474,12 +678,22 @@
     const outputArea = document.getElementById('outputArea');
     const copyBtn = document.getElementById('copyBtn');
     const outputError = document.getElementById('outputError');
+    const saveBtn = document.getElementById('saveBtn');
+    const historyBtn = document.getElementById('historyBtn');
+    const historyPanel = document.getElementById('historyPanel');
+    const historyOverlay = document.getElementById('historyOverlay');
+    const historyCloseBtn = document.getElementById('historyCloseBtn');
+    const historyList = document.getElementById('historyList');
 
     // ===== 事件绑定 =====
     generateBtn.addEventListener('click', generateCopy);
     copyBtn.addEventListener('click', copyOutput);
     fetchCompetitorBtn.addEventListener('click', () => handleFetchWebsite(competitorWebsiteInput, competitorInfoInput, fetchCompetitorBtn, '竞品'));
     fetchMyBtn.addEventListener('click', () => handleFetchWebsite(myWebsiteInput, myProductInfoInput, fetchMyBtn, '我的'));
+    saveBtn.addEventListener('click', saveRecord);
+    historyBtn.addEventListener('click', toggleHistory);
+    historyOverlay.addEventListener('click', toggleHistory);
+    historyCloseBtn.addEventListener('click', toggleHistory);
 
     // ===== 功能函数（占位） =====
 
@@ -643,6 +857,7 @@
                 } catch (_) {}
               } else if (currentEvent === 'done') {
                 copyBtn.disabled = false;
+                saveBtn.disabled = false;
               } else if (currentEvent === 'error' && currentData) {
                 try {
                   const parsed = JSON.parse(currentData);
@@ -663,6 +878,7 @@
         }
 
         copyBtn.disabled = false;
+        saveBtn.disabled = false;
       } catch (err) {
         outputArea.innerHTML = '<span style="color:#dc2626;">生成失败：' + escapeHtml(err.message) + '</span>';
         showError(outputError, '生成失败：' + err.message);
@@ -703,6 +919,121 @@
       element.classList.remove('show');
       element.textContent = '';
     }
+
+    // ===== 历史记录系统 =====
+
+    const HISTORY_KEY = 'reddit_copy_history';
+    const MAX_HISTORY = 10;
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function setHistory(list) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    }
+
+    function renderHistory() {
+      const items = getHistory();
+      if (items.length === 0) {
+        historyList.innerHTML = '<div class="history-empty">暂无收藏记录，生成文案后点击「收藏」保存</div>';
+        return;
+      }
+      historyList.innerHTML = items.map((item, i) => `
+        <div class="history-card" data-index="${i}">
+          <div class="history-card-title">${escapeHtml(item.title || '无标题')}</div>
+          <div class="history-card-meta">${escapeHtml(item.date || '')}</div>
+          <div class="history-card-actions">
+            <button class="btn-restore" data-action="restore" data-index="${i}">重新生成</button>
+            <button class="btn-delete" data-action="delete" data-index="${i}">删除</button>
+          </div>
+        </div>
+      `).join('');
+
+      historyList.querySelectorAll('[data-action="restore"]').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); restoreRecord(parseInt(btn.dataset.index)); });
+      });
+      historyList.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); deleteRecord(parseInt(btn.dataset.index)); });
+      });
+    }
+
+    function saveRecord() {
+      const text = outputArea.innerText;
+      if (!text || text === '点击「生成文案」后，结果将显示在这里' || text === '正在生成文案...') return;
+
+      const items = getHistory();
+      const record = {
+        title: redditTitleInput.value || redditUrlInput.value.split('/comments/')[1]?.split('/')[0] || redditUrlInput.value.slice(0, 50),
+        date: new Date().toLocaleString('zh-CN'),
+        redditUrl: redditUrlInput.value,
+        redditTitle: redditTitleInput.value,
+        redditBody: redditBodyInput.value,
+        competitorWebsite: competitorWebsiteInput.value,
+        competitorInfo: competitorInfoInput.value,
+        myWebsite: myWebsiteInput.value,
+        myProductInfo: myProductInfoInput.value,
+        model: modelSelect.value,
+        result: text
+      };
+
+      if (items.length >= MAX_HISTORY) {
+        alert(`最多保留${MAX_HISTORY}条记录，请先删除部分历史记录`);
+        return;
+      }
+
+      items.unshift(record);
+      setHistory(items);
+      renderHistory();
+
+      const originalText = saveBtn.innerText;
+      saveBtn.innerText = '已收藏';
+      setTimeout(() => { saveBtn.innerText = originalText; }, 1500);
+    }
+
+    function deleteRecord(index) {
+      const items = getHistory();
+      items.splice(index, 1);
+      setHistory(items);
+      renderHistory();
+    }
+
+    function restoreRecord(index) {
+      const items = getHistory();
+      const record = items[index];
+      if (!record) return;
+
+      redditUrlInput.value = record.redditUrl || '';
+      redditTitleInput.value = record.redditTitle || '';
+      redditBodyInput.value = record.redditBody || '';
+      competitorWebsiteInput.value = record.competitorWebsite || '';
+      competitorInfoInput.value = record.competitorInfo || '';
+      myWebsiteInput.value = record.myWebsite || '';
+      myProductInfoInput.value = record.myProductInfo || '';
+      modelSelect.value = record.model || 'deepseek-v4';
+
+      toggleHistory();
+    }
+
+    function toggleHistory() {
+      const isOpen = historyPanel.classList.contains('open');
+      if (isOpen) {
+        historyPanel.classList.remove('open');
+        historyOverlay.classList.remove('open');
+      } else {
+        renderHistory();
+        historyPanel.classList.add('open');
+        historyOverlay.classList.add('open');
+      }
+    }
+
+    // 初始化
+    loadHistory = function() { renderHistory(); };
+    loadHistory();
 
     /**
      * HTML 转义，防止 XSS
