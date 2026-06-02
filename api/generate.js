@@ -78,6 +78,8 @@ export default async function handler(req, res) {
     const decoder = new TextDecoder();
     let buffer = '';
     let fullText = '';
+    let afterSep = false;
+    const SEP = '[ANALYSIS_SEPARATOR]';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -97,7 +99,18 @@ export default async function handler(req, res) {
             const delta = json.choices?.[0]?.delta?.content;
             if (delta) {
               fullText += delta;
-              res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
+              if (!afterSep) {
+                const sepPos = fullText.indexOf(SEP);
+                if (sepPos !== -1) {
+                  afterSep = true;
+                  const charsBeforeSep = sepPos - (fullText.length - delta.length);
+                  if (charsBeforeSep > 0) {
+                    res.write(`event: token\ndata: ${JSON.stringify({ token: delta.slice(0, charsBeforeSep) })}\n\n`);
+                  }
+                } else {
+                  res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
+                }
+              }
             }
           } catch (_) {}
         }
@@ -105,13 +118,15 @@ export default async function handler(req, res) {
     }
 
     // 处理 buffer 剩余内容
-    if (buffer.trim() && buffer.trim() !== 'data: [DONE]' && buffer.trim().startsWith('data: ')) {
+    if (buffer.trim() && buffer.trim().startsWith('data: ')) {
       try {
         const json = JSON.parse(buffer.trim().slice(6));
         const delta = json.choices?.[0]?.delta?.content;
         if (delta) {
           fullText += delta;
-          res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
+          if (!afterSep && delta.indexOf(SEP) === -1) {
+            res.write(`event: token\ndata: ${JSON.stringify({ token: delta })}\n\n`);
+          }
         }
       } catch (_) {}
     }
@@ -162,7 +177,30 @@ ${myInfo || '未提供'}
 
 ## 输出要求
 
-### 第一部分：爆款结构分析
+### 第一步：输出最终 Reddit 帖子
+
+先不要做分析，直接生成最终帖子。
+
+硬性约束：
+- 标题备选：3 个，每个使用不同公式
+- 正文：与竞品帖子保持接近
+- 语言：与爆款帖子完全一致。如果爆款帖子是英文，新帖子也必须是英文；如果爆款帖子是中文，新帖子也必须是中文。绝不能自行切换语言
+- 字数：正文字数与爆款帖子正文保持一致，上下浮动不超过 20%
+- 内容类型：与爆款帖子相同（如爆款是教程帖，新帖子也必须是教程帖；爆款是经验分享帖，新帖子也必须是经验分享帖）
+- 格式：最终帖子使用纯文本格式输出，不要使用任何 markdown 标记（如 **、*、#、>、- 等），保持纯文字干净可读
+- 产品名称出现次数：不超过竞品帖子中产品名称的出现次数
+- 营销感：只能比竞品帖子更低，不能更高
+- 语气：与竞品帖子保持一致
+- 语言完全重写，不出现与原帖相同的句式
+
+### 第二步：输出分析和映射
+
+在帖子内容结束后，输出一行标记：[ANALYSIS_SEPARATOR]
+该标记独占一行，前后不留空格。
+
+标记之后，再输出以下分析和映射内容：
+
+#### 爆款结构分析
 简洁分析以下五项，每项一两句话即可：
 - 标题公式
 - 钩子类型
@@ -171,7 +209,7 @@ ${myInfo || '未提供'}
 - CTA 方式
 - 营销感评估：这篇帖子的营销力度如何隐藏？用了什么手法让推广显得自然？
 
-### 第二部分：产品映射表
+#### 产品映射表
 
 ⚠️ 在开始映射之前，先判断：我的产品信息是否足够完成映射？
 判断标准：是否知道产品解决什么问题、目标用户是谁、核心功能是什么。
@@ -192,22 +230,7 @@ ${myInfo || '未提供'}
 | 目标用户描述 | （帖子里描述的是什么样的人）| （我的产品的对应用户）|
 | 产品出现方式 | （竞品产品是如何、在哪里被提及的）| （我的产品应该如何出现）|
 | 情感触点 | （帖子触发了什么情绪）| （我的产品可以触发的对应情绪）|
-| 营销隐藏手法 | （竞品用了什么方式让推广显得自然）| （我应该用同样或更克制的方式）|
-
-### 第三部分：新帖子
-
-基于以上分析，生成帖子。
-
-硬性约束：
-- 标题备选：3 个，每个使用不同公式
-- 正文：与竞品帖子保持接近
-- 产品名称出现次数：不超过竞品帖子中产品名称的出现次数
-- 营销感：只能比竞品帖子更低，不能更高
-- 语气：与竞品帖子保持一致
-- 语言完全重写，不出现与原帖相同的句式
-
-在输出第三部分（新帖子）之前，单独一行输出标记：[ANALYSIS_SEPARATOR]
-确保该标记独占一行，前后不留空格。`;
+| 营销隐藏手法 | （竞品用了什么方式让推广显得自然）| （我应该用同样或更克制的方式）|`;
 }
 
 /* ===== 输出切分函数 ===== */
@@ -215,22 +238,11 @@ ${myInfo || '未提供'}
 function splitOutput(text) {
   if (!text) return { analysis: null, finalPost: text || '' };
 
-  const patterns = [
-    /(?:###\s*)?第三部分[：:]\s*新帖子/,
-    /(?:###\s*)?Part\s*3[：:]\s*New\s*Post/,
-    /(?:###\s*)?3\s*[.、]\s*新帖子/,
-    /\[ANALYSIS_SEPARATOR\]/
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const start = match.index;
-      const analysis = text.slice(0, start).trim();
-      let finalPost = text.slice(start + match[0].length).trim();
-      finalPost = finalPost.replace(/^[\s\n-]+/, '');
-      return { analysis, finalPost };
-    }
+  const sepIdx = text.indexOf('[ANALYSIS_SEPARATOR]');
+  if (sepIdx !== -1) {
+    const finalPost = text.slice(0, sepIdx).trim();
+    const analysis = text.slice(sepIdx + '[ANALYSIS_SEPARATOR]'.length).trim();
+    return { analysis: analysis || null, finalPost: finalPost || text };
   }
 
   return { analysis: null, finalPost: text };
