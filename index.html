@@ -599,6 +599,15 @@
       display: block;
     }
 
+    /* 抓取按钮旁的错误提示 */
+    .fetch-error {
+      display: inline-block;
+      color: #dc2626;
+      font-size: 12px;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
   </style>
 </head>
 <body>
@@ -624,6 +633,7 @@
               <label for="competitorWebsite">竞品官网<span class="optional">可选</span></label>
               <input type="text" id="competitorWebsite" placeholder="https://...">
               <button class="fetch-btn" id="fetchCompetitorBtn" type="button">从竞品官网抓取</button>
+              <span class="fetch-error" id="competitorFetchError"></span>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label for="competitorInfo">产品描述</label>
@@ -639,6 +649,7 @@
               <label for="myWebsite">我的产品官网<span class="optional">可选</span></label>
               <input type="text" id="myWebsite" placeholder="https://...">
               <button class="fetch-btn" id="fetchMyBtn" type="button">从我的官网抓取</button>
+              <span class="fetch-error" id="myFetchError"></span>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label for="myProductInfo">产品描述</label>
@@ -723,6 +734,8 @@
     const myProductInfoInput = document.getElementById('myProductInfo');
     const fetchCompetitorBtn = document.getElementById('fetchCompetitorBtn');
     const fetchMyBtn = document.getElementById('fetchMyBtn');
+    const competitorFetchError = document.getElementById('competitorFetchError');
+    const myFetchError = document.getElementById('myFetchError');
     const modelSelect = document.getElementById('modelSelect');
     const generateBtn = document.getElementById('generateBtn');
     const outputArea = document.getElementById('outputArea');
@@ -740,8 +753,8 @@
     // ===== 事件绑定 =====
     generateBtn.addEventListener('click', generateCopy);
     copyBtn.addEventListener('click', copyOutput);
-    fetchCompetitorBtn.addEventListener('click', () => handleFetchWebsite(competitorWebsiteInput, competitorInfoInput, fetchCompetitorBtn, '竞品'));
-    fetchMyBtn.addEventListener('click', () => handleFetchWebsite(myWebsiteInput, myProductInfoInput, fetchMyBtn, '我的'));
+    fetchCompetitorBtn.addEventListener('click', () => handleFetchWebsite(competitorWebsiteInput, competitorInfoInput, fetchCompetitorBtn, '竞品', competitorFetchError));
+    fetchMyBtn.addEventListener('click', () => handleFetchWebsite(myWebsiteInput, myProductInfoInput, fetchMyBtn, '我的', myFetchError));
     saveBtn.addEventListener('click', saveRecord);
     historyBtn.addEventListener('click', toggleHistory);
     historyOverlay.addEventListener('click', toggleHistory);
@@ -793,21 +806,21 @@
      * @param {HTMLButtonElement} btn - 按钮元素
      * @param {string} label - 提示标签（如「竞品」/「我的」）
      */
-    async function handleFetchWebsite(urlInput, infoInput, btn, label) {
+    async function handleFetchWebsite(urlInput, infoInput, btn, label, errorEl) {
       const url = urlInput.value.trim();
       if (!url) {
-        showError(outputError, `请先填写${label}官网链接`);
+        errorEl.textContent = '请先填写官网链接';
         return;
       }
       try {
-        hideError(outputError);
+        errorEl.textContent = '';
         const originalText = btn.textContent;
         btn.textContent = '抓取中...';
         btn.disabled = true;
         const text = await fetchWebsiteContent(url);
         infoInput.value = text;
       } catch (err) {
-        showError(outputError, `${label}官网抓取失败：${err.message}`);
+        errorEl.textContent = `抓取失败：${err.message}`;
       } finally {
         btn.textContent = `从${label}官网抓取`;
         btn.disabled = false;
