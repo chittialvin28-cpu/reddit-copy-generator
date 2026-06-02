@@ -22,7 +22,10 @@ achievements:
   - 完成前端 Reddit 抓取 UI：按钮 + 标题展示 + 状态反馈（因 Reddit 封锁 API，抓取不可靠，但 UI 和流程已就绪） ✅
   - 完成 P2 映射布局重构：竞品|我的产品横向并列 + 帖子|生成帖子横向并列，以可视化映射关系 ✅
   - 完成 P2 UI 三期修改：生成按钮移至帖子映射分隔区 + 映射标题条+分区底色 + 收藏/历史/重新生成 ✅
-  - 完成输出切分：AI 完整输出保留分析过程 + 前端按 [ANALYSIS_SEPARATOR] 分离，默认只展示最终帖子，分析过程可折叠查看 ✅
+  - 完成输出切分：AI 完整输出保留分析过程 + 后端按 [ANALYSIS_SEPARATOR] 分离，默认只展示最终帖子，分析过程可折叠查看 ✅
+  - 完成输出切分优化：交换 prompt 输出顺序（帖子在前 → 分隔符 → 分析在后），流式传输中遇到分隔符后停止向前端发送 token，用户只看到最终帖子逐字输出 ✅
+  - 完成错误提示 UI 优化：官网抓取失败的错误信息改为在抓取按钮旁就近显示，无需滑到页面底部查看 ✅
+  - 完成内测版本次数限制：基于 localStorage 每人 10 次使用上限，达到上限后按钮禁用 + 提示 ✅
 
 decisions:
   - 【架构】采用 B 方案 — 全面后端化：新增 `/api/generate` 统一处理 AI 调用，前端只做输入收集和流式展示
@@ -32,18 +35,23 @@ decisions:
   - 【官网抓取】保留 `/api/fetch-url` 不动，不与 `/api/generate` 合并，保持解耦
   - 【模型选择】暂时移除 Kimi 选项，仅保留 DeepSeek
   - 【文档方案】overall.md（产品需求/架构文档）+ PROGRESS.yaml（任务进度快照），两文件分离
+  - 【输出切分】采用「Prompt 输出顺序调换（帖子在前 → 分析在后）」方案，后端检测 [ANALYSIS_SEPARATOR] 后停止流式转发，前端只展示最终帖子
+  - 【错误定位】抓取失败错误就近显示在按钮旁，而非页面底部的公共错误区域
+  - 【内测限制】基于 localStorage 的每设备 10 次上限，不设登录，不设其他限制
 
 current_state:
   - 项目结构：index.html + api/fetch-url.js + api/generate.js + overall.md + PROGRESS.yaml + DIAGNOSIS.md
   - 部署状态：Vercel（https://reddit-copy-generator.vercel.app），已配置 GitHub 自动部署
-  - 左侧输入区：Reddit 链接 + 抓取按钮 + 标题展示 + 正文 + 竞品官网（可选）+ 竞品信息 + 我的官网（可选）+ 我的产品信息 + 两个抓取按钮
-  - 右侧输出区：模型选择器 + 结果展示 + 复制按钮 + 生成文案按钮
-  - 官网抓取：前端调 /api/fetch-url 代理，已实现可用
+  - 左侧输入区：Reddit 链接 + 标题 + 正文 + 竞品官网（可选，带抓取按钮）+ 竞品信息 + 我的官网（可选，带抓取按钮）+ 我的产品信息
+  - 右侧输出区：模型选择器 + 结果展示（最终帖子）+ 分析过程折叠区 + 复制/收藏按钮 + 生成文案按钮（在中间分隔区）
+  - 官网抓取：前端调 /api/fetch-url 代理，错误信息就近显示在按钮旁
   - AI 调用：/api/generate.js 已部署可用（SSE 流式转发 DeepSeek），已配置 DEEPSEEK_API_KEY 环境变量
+  - 输出切分：prompt 中帖子在前、分析在后，以 [ANALYSIS_SEPARATOR] 分隔；后端流式传输到分隔符后停止转发，前端显示纯帖子
   - API Key：完全由 Vercel 环境变量管理，前端零接触，无 localStorage 依赖
+  - 次数限制：基于 localStorage 的每设备 10 次上限，无需登录
 
 blockers:
-  - 无 — P0 全部完成
+  - 无 — 内测版本已就绪
 
 NEXT_SESSION_RULES:
   - 保持代码文件数量简洁，新增文件需有明确必要性
@@ -59,4 +67,5 @@ upcoming_tasks:
   - [P1] ~~/api/generate 内部尝试 Reddit .json 抓取（锦上添花）~~ ✅
   - [P1] ~~移除模型选择器的 Kimi 选项~~ ✅
   - [P2] ~~映射布局重构：映射卡片、箭头分隔、响应式设计~~ ✅
-  - [P2] 产品化打磨：Markdown 渲染、loading 动画、视觉打磨 ← 待确认
+  - [P2] ~~输出切分 + 错误提示优化 + 内测次数限制~~ ✅
+  - [内测] 开放内测版本（https://reddit-copy-generator.vercel.app）— 无需登录，每设备 10 次上限

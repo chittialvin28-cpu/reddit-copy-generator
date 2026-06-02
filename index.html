@@ -51,6 +51,23 @@
       color: #666666;
     }
 
+    /* 使用次数计数器 */
+    .usage-counter {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6b7280;
+      background-color: #f3f4f6;
+      border-radius: 20px;
+    }
+
+    .usage-counter.exhausted {
+      color: #dc2626;
+      background-color: #fef2f2;
+    }
+
     /* 个人中心按钮 */
     .header-history-btn {
       flex-shrink: 0;
@@ -617,6 +634,7 @@
       <div class="header-content">
         <h1>Reddit 爆款文案生成器</h1>
         <p>分析竞品 Reddit 爆款帖子，一键生成适合你产品的 Reddit 运营文案</p>
+        <div class="usage-counter" id="usageCounter"></div>
       </div>
       <button class="header-history-btn" id="historyBtn">个人中心</button>
     </div>
@@ -749,6 +767,47 @@
     const historyList = document.getElementById('historyList');
     const analysisToggle = document.getElementById('analysisToggle');
     const analysisContent = document.getElementById('analysisContent');
+    const usageCounter = document.getElementById('usageCounter');
+
+    // ===== 使用次数限制（localStorage 内测版本） =====
+    const USAGE_KEY = 'reddit_copy_usage_count';
+    const USAGE_LIMIT = 10;
+
+    function getUsageCount() {
+      try {
+        return parseInt(localStorage.getItem(USAGE_KEY)) || 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+
+    function setUsageCount(count) {
+      try {
+        localStorage.setItem(USAGE_KEY, count);
+      } catch (_) {}
+    }
+
+    function incrementUsage() {
+      const count = getUsageCount() + 1;
+      setUsageCount(count);
+      return count;
+    }
+
+    function updateUsageUI() {
+      const count = getUsageCount();
+      const remaining = USAGE_LIMIT - count;
+      if (remaining <= 0) {
+        usageCounter.textContent = '已达到使用上限';
+        usageCounter.classList.add('exhausted');
+        generateBtn.disabled = true;
+        generateBtn.title = '已达到内测使用上限';
+        generateBtn.style.opacity = '0.5';
+        generateBtn.style.cursor = 'not-allowed';
+      } else {
+        usageCounter.textContent = `内测版本 · 剩余使用次数: ${remaining}/${USAGE_LIMIT}`;
+        usageCounter.classList.remove('exhausted');
+      }
+    }
 
     // ===== 事件绑定 =====
     generateBtn.addEventListener('click', generateCopy);
@@ -831,6 +890,13 @@
      * 通过 Vercel 后端代理调用 AI API（SSE 流式）
      */
     async function generateCopy() {
+      const currentCount = getUsageCount();
+      if (currentCount >= USAGE_LIMIT) {
+        showError(outputError, '已达到内测使用上限（10次），感谢你的参与！');
+        updateUsageUI();
+        return;
+      }
+
       try {
         hideError(outputError);
 
@@ -937,6 +1003,8 @@
                   const parsed = JSON.parse(currentData);
                   if (parsed.finalPost) {
                     outputArea.textContent = parsed.finalPost;
+                    incrementUsage();
+                    updateUsageUI();
                   }
                 } catch (_) {}
                 copyBtn.disabled = false;
@@ -1121,6 +1189,7 @@
     }
 
     // 初始化
+    updateUsageUI();
     loadHistory = function() { renderHistory(); };
     loadHistory();
 
